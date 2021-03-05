@@ -1,9 +1,13 @@
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useContext } from "react";
+import AddRestaurant from "./AddRestaurant";
+import Context from "../context";
 
-const Map = ({ getPlaces }) => {
+const Map = () => {
   const mapRef = useRef();
+  const { state, dispatch } = useContext(Context);
 
   const [restaurant, setRestaurant] = useState({});
+  const [mapElm, setMapElm] = useState(null);
 
   useEffect(() => {
     if (window.google) {
@@ -12,6 +16,8 @@ const Map = ({ getPlaces }) => {
         zoom: 14,
       });
 
+      setMapElm(map);
+
       window.google.maps.event.addListener(map, "rightclick", (event) => {
         const lat = event.latLng.lat();
         const lng = event.latLng.lng();
@@ -19,6 +25,14 @@ const Map = ({ getPlaces }) => {
         setRestaurant({ lat, lng });
         // populate yor box/field with lat, lng
       });
+
+      // window.google.maps.event.addListener(map, "dragend", (event) => {
+      //   const lat = event.latLng.lat();
+      //   const lng = event.latLng.lng();
+
+      //   console.log({ lat, lng });
+      //   // populate yor box/field with lat, lng
+      // });
 
       navigator.geolocation.getCurrentPosition(({ coords }) => {
         const position = {
@@ -32,34 +46,6 @@ const Map = ({ getPlaces }) => {
           map,
         });
 
-        const createPhotoMarker = (place) => {
-          const photos = place.photos;
-          if (!photos) {
-            return;
-          }
-
-          const icon = {
-            url: "https://www.summitdowntown.org/static/img/icon_eat.svg",
-            scaledSize: new window.google.maps.Size(50, 50),
-          };
-
-          const marker = new window.google.maps.Marker({
-            map: map,
-            position: place.geometry.location,
-            title: place.name,
-            icon: icon,
-            animation: window.google.maps.Animation.DROP,
-          });
-
-          marker.addListener("mouseover", () => {
-            if (marker.getAnimation() !== null) {
-              marker.setAnimation(null);
-            } else {
-              marker.setAnimation(window.google.maps.Animation.BOUNCE);
-            }
-          });
-        };
-
         const service = new window.google.maps.places.PlacesService(map);
         service.nearbySearch(
           {
@@ -69,11 +55,7 @@ const Map = ({ getPlaces }) => {
           },
           (results, status) => {
             if (status === "OK") {
-              getPlaces(results);
-
-              for (var i = 0; i < results.length; i++) {
-                createPhotoMarker(results[i]);
-              }
+              dispatch({ type: "UPDATE_RESTAURANTS", payload: results });
             }
           }
         );
@@ -81,10 +63,61 @@ const Map = ({ getPlaces }) => {
     }
   }, [window.google]);
 
+  const createMarker = (place) => {
+    const icon = {
+      url: "https://www.summitdowntown.org/static/img/icon_eat.svg",
+      scaledSize: new window.google.maps.Size(50, 50),
+    };
+
+    const position = {
+      lat: place.lat ? place.lat : place.geometry.location.lat(),
+      lng: place.lng ? place.lng : place.geometry.location.lng(),
+    };
+
+    const marker = new window.google.maps.Marker({
+      map: mapElm,
+      position,
+      title: place.name,
+      icon: icon,
+      animation: window.google.maps.Animation.DROP,
+    });
+
+    // marker.addListener("mouseover", () => {
+    //   if (marker.getAnimation() !== null) {
+    //     marker.setAnimation(null);
+    //   } else {
+    //     marker.setAnimation(window.google.maps.Animation.BOUNCE);
+    //   }
+    // });
+  };
+
+  useEffect(() => {
+    const restaurants = () => {
+      if (state.filtered.length > 0) {
+        return state.filtered;
+      } else {
+        return state.restaurants;
+      }
+    };
+
+    restaurants().map((r) => createMarker(r));
+  }, [state.restaurants, state.filtered]);
+
+  const addRestaurant = (data) => {
+    const newRestaurant = { ...data, ...restaurant };
+
+    dispatch({
+      type: "UPDATE_RESTAURANTS",
+      payload: [newRestaurant, ...state.restaurants],
+    });
+
+    setRestaurant({});
+  };
+
   return (
     <>
       {restaurant.lat && (
-        <h2 className="display-4 text-center">Adding a new restaurant</h2>
+        <AddRestaurant submit={addRestaurant} close={setRestaurant} />
       )}
       <div
         ref={mapRef}

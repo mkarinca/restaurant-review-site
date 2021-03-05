@@ -1,8 +1,8 @@
 import { useState } from "react";
 import StarRatings from "react-star-ratings";
 
-function AddReview({ submit, close }) {
-  const [data, setData] = useState({ author_name: "", text: "" });
+function AddRestaurant({ submit, close }) {
+  const [data, setData] = useState({ name: "", text: "" });
 
   const handleChange = (e) =>
     setData({ ...data, [e.target.name]: e.target.value });
@@ -20,18 +20,18 @@ function AddReview({ submit, close }) {
           className="btn btn-close m-2 bg-danger "
         ></button>
 
-        <h2 className="fs-3 fw-bold text-start mb-4">Add review</h2>
+        <h2 className="fs-3 fw-bold text-start mb-4">Add new restaurant</h2>
 
         <form onSubmit={handleSubmit}>
           <div className="form-floating">
             <input
               id="floatingInput"
               type="text"
-              name="author_name"
+              name="name"
               placeholder="Your Name"
               className="form-control"
               onChange={handleChange}
-              value={data.author_name}
+              value={data.name}
               required
             />
             <label htmlFor="floatingInput" className="mb-2">
@@ -74,4 +74,4 @@ function AddReview({ submit, close }) {
   );
 }
 
-export default AddReview;
+export default AddRestaurant;

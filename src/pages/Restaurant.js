@@ -3,6 +3,7 @@ import StarRatings from "react-star-ratings";
 import { FaMapMarkerAlt, FaPhoneAlt, FaLink } from "react-icons/fa";
 import AddReview from "../components/AddReview";
 import ReviewsList from "../components/ReviewsList";
+import RestaurantPhotos from "../components/RestaurantPhotos";
 
 export default function Restaurant(props) {
   const mapRef = useRef();
@@ -19,8 +20,9 @@ export default function Restaurant(props) {
       },
       (data, status) => {
         if (status === "OK") {
-          setPlace(data);
           console.log(data);
+
+          setPlace(data);
         }
       }
     );
@@ -35,11 +37,11 @@ export default function Restaurant(props) {
 
   return (
     <div>
-      <div className="container">
-        <div className="row bg-light positon-relative">
-          <div className="col-12">
+      <div className="container ">
+        <div ref={mapRef} />
+        <div className="row bg-light ">
+          {/* <div className="col-12 ">
             <div className="position-absolute">
-              <div ref={mapRef} />
               {place.photos && (
                 <div className="photo-gallery">
                   {place.photos?.map((p) => (
@@ -48,10 +50,10 @@ export default function Restaurant(props) {
                 </div>
               )}
             </div>
-          </div>
-          <div className="col-4 p-5">
+          </div> */}
+          <div className="col-4 mt-5">
             <div className="card text-center mt-4 shadow-lg">
-              <div className="card-body p-5">
+              <div className="card-body p-4">
                 <img
                   className="border border-3 border-dark rounded-circle shadow"
                   width="180"
@@ -63,7 +65,8 @@ export default function Restaurant(props) {
                   }
                   alt="restaurant-image"
                 />
-                <h5 className="card-title mt-4 fw-bold">{place.name}</h5>
+                <h5 className="card-title mt-4 fw-bold fs-3">{place.name}</h5>
+
                 <StarRatings
                   rating={place.rating}
                   numberOfStars={5}
@@ -72,16 +75,44 @@ export default function Restaurant(props) {
                   starSpacing="3px"
                   starRatedColor="orange"
                 />
-                <div className="d-flex justify-content-start mt-3">
-                  <FaMapMarkerAlt size="20px" />
-                  <p className="text-start ms-3">{place.vicinity}</p>
-                </div>
-                <div className="d-flex justify-content-start">
-                  <FaPhoneAlt size="20px" />
-                  <p className="text-start ms-3">
-                    {place.formatted_phone_number}
-                  </p>
-                </div>
+
+                {place.vicinity && (
+                  <div className="d-flex justify-content-start mt-3">
+                    <div className="icon">
+                      <FaMapMarkerAlt size="20px" />
+                    </div>
+                    <div className="text-start ms-3">
+                      <p>{place.vicinity}</p>
+                    </div>
+                  </div>
+                )}
+
+                {place.formatted_phone_number && (
+                  <div className="d-flex justify-content-start">
+                    <div className="icon">
+                      <FaPhoneAlt />
+                    </div>
+                    <div className="text-start ms-3">
+                      <p>{place.formatted_phone_number}</p>
+                    </div>
+                  </div>
+                )}
+
+                {place.website && (
+                  <div className="d-flex justify-content-start">
+                    <div className="icon">
+                      <FaLink />
+                    </div>
+                    <div className="mb-3">
+                      <a
+                        href={place.website}
+                        className="text-decoration-none link-dark ms-3"
+                      >
+                        Go to Website
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 {place.price_level && (
                   <div>
@@ -110,31 +141,44 @@ export default function Restaurant(props) {
                   <div className="d-flex mt-4 justify-content-center">
                     <span
                       className={`fs-5 badge ${
-                        place.opening_hours.open_now
-                          ? "bg-danger"
-                          : "bg-success"
+                        place.opening_hours.isOpen()
+                          ? "bg-success"
+                          : "bg-danger"
                       }`}
                     >
-                      {place.opening_hours.open_now ? "CLOSED" : "OPEN"}
+                      {place.opening_hours.isOpen() ? "OPEN" : "CLOSED"}
                     </span>
                   </div>
                 )}
               </div>
+
+              <img
+                className="img-fluid"
+                src={`https://maps.googleapis.com/maps/api/streetview?size=400x400&location=${place.geometry?.location.lat()},${place.geometry?.location.lng()}&fov=80&heading=70&pitch=0&key=${
+                  process.env.REACT_APP_MAP_API
+                }`}
+                alt=""
+              />
             </div>
           </div>
-          <div className="col-8"></div>
-        </div>
-        <div className="text-center my-5">
-          <h2 className="display-4 ">Reviews</h2>
-          <button
-            onClick={() => setReview({ time: new Date().getTime() })}
-            className="btn btn-primary"
+          <div
+            className="col-8 mt-4 pt-5
+          "
           >
-            Add Review
-          </button>
+            <RestaurantPhotos photos={place.photos} />
+            <div className="d-flex my-4">
+              <h2 className="border-bottom">Reviews</h2>
+              <button
+                onClick={() => setReview({ time: new Date().getTime() })}
+                className="btn btn-primary mb-3 ms-auto"
+              >
+                Add Review
+              </button>
+            </div>
+            {review.time && <AddReview submit={addReview} close={setReview} />}
+            <ReviewsList reviews={place.reviews} />
+          </div>
         </div>
-        {review.time && <AddReview submit={addReview} close={setReview} />}
-        <ReviewsList reviews={place.reviews} />
       </div>
     </div>
   );

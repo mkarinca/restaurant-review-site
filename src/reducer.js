@@ -9,6 +9,19 @@ const reducer = (state, { type, payload }) => {
       return {
         ...state,
         filtered: payload,
+        filtering: true,
+      };
+    case "UPDATE_MARKERS":
+      return {
+        ...state,
+        markers: payload,
+      };
+
+    case "CLEAR_FILTERS":
+      return {
+        ...state,
+        filtered: [],
+        filtering: false,
       };
     default:
       return state;

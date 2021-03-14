@@ -2,7 +2,10 @@ import { useState } from "react";
 import StarRatings from "react-star-ratings";
 
 function AddRestaurant({ submit, close }) {
-  const [data, setData] = useState({ name: "", text: "" });
+  const [data, setData] = useState({
+    name: "",
+    vicinity: "",
+  });
 
   const handleChange = (e) =>
     setData({ ...data, [e.target.name]: e.target.value });
@@ -35,21 +38,21 @@ function AddRestaurant({ submit, close }) {
               required
             />
             <label htmlFor="floatingInput" className="mb-2">
-              Name
+              Restaurant Name
             </label>
           </div>
           <div className="form-floating mt-3">
-            <textarea
-              id="comments"
-              name="text"
+            <input
+              id="adress"
+              type="text"
+              name="vicinity"
               placeholder="Text Here..."
               className="form-control"
-              style={{ height: 120 }}
               onChange={handleChange}
-              value={data.text}
+              value={data.vicinity}
               required
             />
-            <label htmlFor="comments">Comment</label>
+            <label htmlFor="adress">Adress</label>
           </div>
           <div>
             <label htmlFor="rating" className="mt-3 d-block">

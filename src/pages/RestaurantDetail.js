@@ -5,7 +5,7 @@ import AddReview from "../components/AddReview";
 import ReviewsList from "../components/ReviewsList";
 import RestaurantPhotos from "../components/RestaurantPhotos";
 
-export default function Restaurant(props) {
+export default function RestaurantDetail(props) {
   const mapRef = useRef();
 
   const [place, setPlace] = useState({});
@@ -40,20 +40,9 @@ export default function Restaurant(props) {
       <div className="container ">
         <div ref={mapRef} />
         <div className="row bg-light ">
-          {/* <div className="col-12 ">
-            <div className="position-absolute">
-              {place.photos && (
-                <div className="photo-gallery">
-                  {place.photos?.map((p) => (
-                    <img src={p.getUrl()} alt="" />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div> */}
           <div className="col-4 mt-5">
-            <div className="card text-center mt-4 shadow-lg">
-              <div className="card-body p-4">
+            <div className="card text-center mt-4 shadow-lg ">
+              <div className="card-body p-4 rounded-3">
                 <img
                   className="border border-3 border-dark rounded-circle shadow"
                   width="180"
@@ -157,12 +146,12 @@ export default function Restaurant(props) {
                 src={`https://maps.googleapis.com/maps/api/streetview?size=400x400&location=${place.geometry?.location.lat()},${place.geometry?.location.lng()}&fov=80&heading=70&pitch=0&key=${
                   process.env.REACT_APP_MAP_API
                 }`}
-                alt=""
+                alt="streeview-photo"
               />
             </div>
           </div>
           <div
-            className="col-8 mt-4 pt-5
+            className="col-8 mt-4 pt-5 
           "
           >
             <RestaurantPhotos photos={place.photos} />

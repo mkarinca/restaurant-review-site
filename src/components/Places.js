@@ -1,7 +1,8 @@
 import { useContext, useState } from "react";
-import { Link } from "react-router-dom";
+
 import StarRatings from "react-star-ratings";
 import Context from "../context";
+import RestaurantList from "./RestaurantList";
 
 export default function Places() {
   const { state, dispatch } = useContext(Context);
@@ -19,13 +20,13 @@ export default function Places() {
       type: "FILTER_RESTAURANTS",
       payload: filtered,
     });
-
-    console.log({ filtered });
   };
 
   const restaurants = () => {
     if (state.filtered.length === 0 && filter !== 0) {
       return [];
+    } else if (state.filtered.length > 0 && filter === 0) {
+      return state.restaurants;
     } else if (state.filtered.length > 0) {
       return state.filtered;
     } else {
@@ -33,66 +34,69 @@ export default function Places() {
     }
   };
 
-  return (
-    <div>
-      <h4 className="m-3 fw-bold">Nearby Restaurants</h4>
+  const clearFilter = () => {
+    setFilter(0);
+    dispatch({ type: "CLEAR_FILTERS" });
+  };
 
-      <div className="bg-light p-4">
-        <StarRatings
-          rating={filter}
-          numberOfStars={5}
-          name="rating"
-          changeRating={handleFilter}
-          starDimension="20px"
-          starSpacing="3px"
-          starRatedColor="orange"
-        />
-      </div>
+  const handleHover = (e) => {
+    console.log({ e });
+    const foundMarker = state.markers.filter((m) => {
+      if (m.getAnimation() !== null) {
+        m.setAnimation(null);
+      }
+
+      return m.place_id === e.target.dataset.id;
+    });
+
+    if (foundMarker.length > 0) {
+      foundMarker[0].setAnimation(window.google.maps.Animation.BOUNCE);
+    }
+  };
+
+  return (
+    <ul className="list-group">
+      <li className="list-group-item active">
+        <h4 className="m-3 fw-bold">Nearby Restaurants</h4>
+
+        <div className="bg-light p-3">
+          <h4 className="border-bottom fw-bold text-primary">
+            Filter Restaurants
+          </h4>
+          <StarRatings
+            rating={filter}
+            numberOfStars={5}
+            name="rating"
+            changeRating={handleFilter}
+            starDimension="20px"
+            starSpacing="3px"
+            starRatedColor="orange"
+          />
+          {filter !== 0 && (
+            <button
+              className="btn btn-sm btn-danger ms-3"
+              onClick={() => clearFilter()}
+            >
+              Clear Filter
+            </button>
+          )}
+        </div>
+      </li>
 
       {state.filtered.length === 0 && filter !== 0 ? (
-        <div className="alert alert-warning">Nothing found</div>
+        <div className="alert alert-warning m-2">Nothing found</div>
       ) : (
-        ""
+        restaurants().map((r, i) => (
+          <li
+            onMouseEnter={handleHover}
+            data-id={r.place_id}
+            key={i}
+            className="list-group-item "
+          >
+            <RestaurantList place={r} />
+          </li>
+        ))
       )}
-
-      <div className="list-group text-primary">
-        {restaurants().map((place) => {
-          const photoUrl = place.photos ? place.photos[0].getUrl() : null;
-          return (
-            <Link
-              to={`/${place.place_id}`}
-              className="list-group-item "
-              aria-current="true"
-              key={place.place_id}
-            >
-              <div className="d-flex w-100 justify-content-between">
-                <div className="me-auto">
-                  <h5 className="mb-1 fw-bold">{place.name}</h5>
-                  <address className="mb-0 text-primary-50">
-                    {place.vicinity}
-                  </address>
-                  <StarRatings
-                    rating={place.rating}
-                    numberOfStars={5}
-                    name="rating"
-                    starDimension="20px"
-                    starSpacing="3px"
-                    starRatedColor="orange"
-                  />
-                </div>
-                {photoUrl && (
-                  <img
-                    src={photoUrl}
-                    width="75"
-                    height="75"
-                    className="ms-3 rounded-circle"
-                  />
-                )}
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </div>
+    </ul>
   );
 }
